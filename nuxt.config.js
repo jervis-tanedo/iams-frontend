@@ -21,6 +21,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+    '@/assets/css/main.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -34,21 +35,79 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/tailwindcss
     '@nuxtjs/tailwindcss',
+    '@nuxt/postcss8',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    '@nuxtjs/auth-next',
+    '@nuxtjs/dotenv'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: '/',
+    // baseURL: process.env.BACKEND_URL,
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  }
+    
+  },
+  router: {
+    middleware: ['auth']
+  },
+  auth: {
+    strategies: {
+      local: false,
+      keycloak: {
+        scheme: 'oauth2',
+        endpoints: {
+          authorization: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
+          token: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+          userInfo: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/userinfo`,
+          // logout: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout?post_logout_redirect_uri=` + encodeURIComponent(`${process.env.KEYCLOAK_LOGOUT_REDIRECT}`),
+          logout: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout`
+        },
+        token: {
+          property: 'access_token',
+          type: 'Bearer',
+          name: 'Authorization',
+          maxAge: 300
+        },
+        refreshToken: {
+          property: 'refresh_token',
+          maxAge: 60 * 60 * 24 * 30
+        },
+        idToken: {
+          property: 'id_token',
+          maxAge: 60 * 60 * 24 * 30,
+        },
+        responseType: 'code',
+        grantType: 'authorization_code',
+        clientId: 'uplb-iams',
+        // clientSecret: '3EYpSJejNEwnMpnGK5UM7lgPrqQh0yES',
+        accessType: 'public',
+        scope: ['openid', 'profile', 'email'],
+        codeChallengeMethod: 'S256'
+      }
+    },
+    redirect: {
+      login: '/login',
+      logout: '/',
+      home: '/'
+    }
+  },
+  proxy: {
+    '/api' : {
+      target: 'http://localhost',
+      changeOrigin: true,
+    },
+    '/admin' : {
+      target: 'http//localhost:8282',
+      changeOrigin: true
+    }
+  },
 }
