@@ -65,7 +65,7 @@
             </div>
           </div>
         </span>
-        <!-- AMIS LINK -->
+        <!-- DASHBOARD LINK -->
         <span
           
           class="flex items-center p-4 hover:bg-gray-300 hover:text-red-700"
@@ -83,8 +83,56 @@
             </svg>
           </span>
           <a href="/">Dashboard</a></span>
-          <!-- END AMIS LINK -->
-                
+          <!-- END DASHBOARD LINK -->
+          <!-- USER MANAGEMENT-->  
+          <span
+        @click="isUserManagementOpen = !isUserManagementOpen"
+        
+        class="flex items-center p-4 hover:bg-gray-300 hover:text-red-700"
+        >
+        <span class="mr-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2">
+            <path d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path
+              d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+          </svg>
+        </span>
+        <span>User Management</span>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          class="w-3 h-3 ml-auto transform"
+          :class="isOpen ? 'rotate-0' : '-rotate-90'"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 448 512">
+          <path
+            fill="currentColor"
+            d="M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path>
+        </svg>
+       
+      </span>
+       <ul id="dropdown-student" class="py-2 space-y-2" v-show="isUserManagementOpen">
+          <li class="flex items-center p-2 pl-11 w-full text-base font-normal hover:bg-gray-300 hover:text-red-700">
+            <!-- <a href="">Create User</a> -->
+            <nuxt-link to="/user-management/create-user">Create User</nuxt-link>
+          </li>
+          <li class="flex items-center p-2 pl-11 w-full text-base font-normal hover:bg-gray-300 hover:text-red-700">
+            <a href="/user-management/view-users">Users</a>
+          </li>
+        </ul>    
+          <!-- END USER MANAGEMENT-->      
         
         <hr class="py-2">
         <!-- LOGOUT -->
@@ -109,17 +157,20 @@
           
   
       </aside>
+      <Alert/>
     </nav>
     </div>
   </template>
   
   <script>
-  import axios from 'axios';
+  import Alert from './Alert.vue';
   export default {
+      components: { Alert },
       name: 'Navbar',
       data() {
         return {
             isOpen: true,
+            isUserManagementOpen: false,
         }
       },
       methods: {
@@ -136,6 +187,9 @@
               console.log(err);
             }
           },
+          // logout(){
+          //   return httpServletRequest.logout()
+          // },
       },
       watch: {
           isOpen: {
