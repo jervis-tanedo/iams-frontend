@@ -79,7 +79,7 @@ export const getters = {
 }
 
 export const actions = {
-    detectUser({dispatch, state, commit}){
+    async detectUser({dispatch, state, commit}){
         let params = {
             "firstName": state.userDetails.firstname,
             "lastName": state.userDetails.lastname,
@@ -87,7 +87,10 @@ export const actions = {
             "birthdate": state.userDetails.birthdate
         }
         try {
-            const res = this.$axios.$post('http://localhost/api/users/finduser', params )
+            const res = await this.$axios.$post('http://localhost/api/users/finduser', params, {headers:{
+                'Authorization' : this.$auth.strategy.token.get(),
+                'Content-Type' : 'application/json',
+            }})
             .then(response => {
                 if(response.userFound != 0) {
                     console.log(response.userFound)
@@ -102,7 +105,7 @@ export const actions = {
         }
     },
 
-    addUser({dispatch, commit, state}) {
+    async addUser({dispatch, commit, state}) {
         // let keycloakApi = `https://dev.iams.uplb.edu.ph/auth/admin/realms/UPLB_APP_REALM/users`
         let keycloakApi = `http://localhost:8282/admin/realms/UPLB_APP_REALM/users`
         // program to generate random strings
@@ -145,13 +148,13 @@ export const actions = {
         }
 
         try {
-            const res = this.$axios.$post(keycloakApi, apiData,
+            const res = await this.$axios.$post(keycloakApi, apiData,
             {headers: {
                 'Authorization' : this.$auth.strategy.token.get(),
                 'Content-Type' : 'application/json',
             }}).then(response => {
                 console.log(response)
-                setTimeout(() => {dispatch('getUserUuid'), 3000})
+                setTimeout(() => {dispatch('getUserUuid'), 1000})
             })
         } catch (error) {
             console.log(error)
@@ -161,21 +164,20 @@ export const actions = {
         }
     },
 
-    getUserUuid({commit, state, dispatch}, payload){
+    async getUserUuid({commit, state, dispatch}, payload){
         //get newly created user
         let keycloakApi = `http://localhost:8282/admin/realms/UPLB_APP_REALM/users`
         try {
-            const res = this.$axios.$get(keycloakApi + '/?email=' + state.userDetails.email, {
+            const res = await this.$axios.$get(keycloakApi + '/?email=' + state.userDetails.email, {
                 headers: {
                     'Authorization' : this.$auth.strategy.token.get(),
                     'Content-Type' : 'application/json',
             }})
-            .then(response => {
-                console.log(response[0])
-                commit('SET_USER_UUID', response[0].id)
-                console.log(state.userDetails.uuid)
-                setTimeout(() => {dispatch('toMasterData'), 2000})
-            })
+            console.log(res)
+            await commit('SET_USER_UUID', res[0].id)
+            console.log(state.userDetails.uuid)
+            setTimeout(() => {dispatch('toMasterData'), 1000})
+
         } catch (error) {
             console.log(error)
             commit('SET_ERROR_MSG', error)
@@ -184,7 +186,10 @@ export const actions = {
 
     toMasterData({state, commit}, payload) {
          try {
-            const data = this.$axios.$post('http://localhost/api/users', state.userDetails)
+            const data = this.$axios.$post('http://localhost/api/users', state.userDetails, {headers:{
+                'Authorization' : this.$auth.strategy.token.get(),
+                'Content-Type' : 'application/json',
+              }})
             .then(response => {
                 console.log(response)
                 let successMsg = "User created"
@@ -312,7 +317,11 @@ export const mutations = {
         state.userDetails.role = role
     },
 
+    SET_USER_UUID(state, uuid){
+        state.userDetails.uuid = uuid
+    },
+
     CLEAR(state){
         state.userDetails = null
-    }
+    },
 }
