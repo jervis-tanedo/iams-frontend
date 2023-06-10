@@ -4,7 +4,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'frontend',
+    title: 'UPLB IAMS',
     htmlAttrs: {
       lang: 'en'
     },
@@ -26,6 +26,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~/plugins/vs-pagination',
+    '~/plugins/vue-select'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -88,7 +90,8 @@ export default {
         responseType: 'code',
         grantType: 'authorization_code',
         clientId: 'uplb-iams',
-        // clientSecret: '3EYpSJejNEwnMpnGK5UM7lgPrqQh0yES',
+        // clientSecret: 'zItiNvIKVCHY55DIg4CYbRvsEv3ACOgf',
+        // clientSecret: '3EYpSJejNEwnMpnGK5UM7lgPrqQh0yES', ?protocol=oauth2&response_type=code&access_type=public&client_id=uplb-iams-visitor&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Flogin&scope=openid%20profile%20email&state=u9IriovKly&code_challenge_method=S256&code_challenge=DXJDjF3AhNRHNGQyp6KW3wbTAsVWAE-dEgNtmoY4POo
         accessType: 'public',
         scope: ['openid', 'profile', 'email'],
         codeChallengeMethod: 'S256'
@@ -106,7 +109,7 @@ export default {
       changeOrigin: true,
     },
     '/admin' : {
-      target: 'http//localhost:8282',
+      target: `${process.env.KEYCLOAK_URL}`,
       changeOrigin: true
     }
   },

@@ -3,7 +3,7 @@ import Vue from "vue"
 export const state = () => ({
     // initialLoad: true,
     // loading: false,
-    filterValues: {}
+    filterValues: {},
 })
   
 export const actions = {

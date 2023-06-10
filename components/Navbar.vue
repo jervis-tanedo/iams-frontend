@@ -17,11 +17,13 @@
           </svg>
         </button>
         <div class="m-auto md:mx-4">
-          <img src="@/assets/images/uplb-logo.png" class="h-12 w-auto" alt="UPLB Logo" />
+          <img src="@/assets/images/uplb-official-logo.png" class="h-12 w-auto" alt="UPLB Logo" />
         </div>
-        <h1 class="font-semibold text-xl hidden md:flex items-center">
-          IAMS ADMIN
-        </h1>
+        <div class="">
+          <h1 class="font-semibold text-xl hidden md:flex items-center w-64">
+            IAMS ADMIN
+          </h1>
+        </div>
       </div>
       <!-- END HEADER -->
       <transition
@@ -50,24 +52,17 @@
           class="flex w-full items-center p-4 border-b">
           <div class="flex text-black">
             <div class="m-auto px-3">
-              <!-- <img
-                src="@/assets/images/default.jpg"
-                class="h-12 w-auto"
-                alt="User Picture" /> -->
             </div>
   
-            <div class="inline-block w-2/3">
-              <!-- <img v-if="keycloakUser.picture" :src="keycloakUser.picture" :alt="keycloakUser.name" class="w-100 h-100 rounded-full"> -->
-              <!-- <img src="@/assets/images/default.jpg" alt="z" class="w-100 h-100 rounded-full"> -->
-              <img :src="this.$auth.user.picture" alt="z" class="w-100 h-100 rounded-full">
-              <p class="font-bold text-xl">{{ this.$auth.user.given_name }}  {{ this.$auth.user.family_name }}</p>
-              <p class="break-words text-sm">{{ this.$auth.user.email }}</p>
+            <div class="inline-block w-2/3 justify-center">
+              <img :src="this.$auth.user.picture" :alt="this.$auth.user.name" class="w-100 h-100 rounded-full">
+              <p class="font-bold text-lg">{{ this.$auth.user.name }}</p>
+              <p class="text-sm">{{ this.$auth.user.email }}</p>
             </div>
           </div>
         </span>
         <!-- DASHBOARD LINK -->
         <span
-          
           class="flex items-center p-4 hover:bg-gray-300 hover:text-red-700"
           ><span class="mr-2">
             <svg
@@ -85,7 +80,7 @@
           <a href="/">Dashboard</a></span>
           <!-- END DASHBOARD LINK -->
           <!-- USER MANAGEMENT-->  
-          <span
+          <span v-show="isAdmin"
         @click="isUserManagementOpen = !isUserManagementOpen"
         
         class="flex items-center p-4 hover:bg-gray-300 hover:text-red-700"
@@ -157,21 +152,38 @@
           
   
       </aside>
+      <div class="relative w-32 items-right text-right ml-auto pr-32">
+        <QuickLinks/>
+      </div>
       <Alert/>
     </nav>
+    <Unauthorized401 v-show="!isAdmin"/>
     </div>
   </template>
   
   <script>
   import Alert from './Alert.vue';
+  import QuickLinks from './QuickLinks.vue'
+  import Unauthorized401 from './Errors/401.vue'
   export default {
-      components: { Alert },
+      components: { Alert, QuickLinks, Unauthorized401 },
       name: 'Navbar',
       data() {
         return {
-            isOpen: true,
+            isOpen: false,
             isUserManagementOpen: false,
+            error: null,
         }
+      },
+      computed: {
+        isAdmin() {
+          if(this.$auth.user.resource_access['uplb-iams']){
+                const roles = this.$auth.user.resource_access['uplb-iams'].roles;
+                return roles.find(el => el === "admin") ? true : false;
+            } else {
+                return false
+            }
+        },
       },
       methods: {
           drawer() {
@@ -187,9 +199,6 @@
               console.log(err);
             }
           },
-          // logout(){
-          //   return httpServletRequest.logout()
-          // },
       },
       watch: {
           isOpen: {
@@ -209,6 +218,7 @@
               if (e.keyCode == 27 && this.isOpen)
                   this.isOpen = false;
           });
+          // this.isAdmin();
       },
   }
   </script>

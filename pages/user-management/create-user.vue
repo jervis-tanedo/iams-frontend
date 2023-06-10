@@ -1,18 +1,17 @@
 <template>
-    <div class="relative">
-        <div class="block px-64 py-20 overflow-auto">
-            <div class="card h-screen">
-                <div class="card-header bg-white rounded p-2 m-1 h-screen">
-                    <div class="grid grid-cols-3 gap-4">
+    <div class="relative flex items-top justify-center min-h-screen bg-gray-100 sm:items-center sm:pt-0">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="mt-8 bg-white overflow-hidden shadow sm:rounded-lg p-12">
+                <div class="grid grid-cols-3 gap-4">
                         <div class="mb-4">
                             <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="role">
                             Role
                             </label>
                             <select tabindex="1" v-model="role" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
                                 <option disabled selected>Please select...</option>
-                                <option value="amis-student">AMIS - Student</option>
-                                <option value="amis-faculty">AMIS - Faculty</option>
-                                <option value="iams-admin">IAMS - Admin</option>
+                                <option value="student-amis">AMIS - Student</option>
+                                <option value="faculty-amis">AMIS - Faculty</option>
+                                <option value="admin-iams">IAMS - Admin</option>
                             </select>
                         </div>
                     </div>
@@ -123,73 +122,191 @@
                     <hr>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group mb-4">
-                            <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="regions">
-                            Region
-                            </label>
-                            <select 
-                            tabindex="10"
-                            @change="handleProvince" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
-                                <option disabled selected>Select Region</option>
-                                <option v-for="region in regions" :value="region.region_code" :key="region.region_code">{{
-                                    region.region_name
-                                    }}
-                                </option>
-                            </select>
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="regions">
+                                Region
+                                </label>
+                                <select 
+                                id="presentRegion"
+                                tabindex="10"
+                                @change="handlePresentProvince" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Region</option>
+                                    <option v-for="region in presentRegions" :value="region.region_code" :key="region.region_code">{{
+                                        region.region_name
+                                        }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.region">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleCity">
+                                Province
+                                </label>
+                                <select 
+                                id="presentProvince"
+                                tabindex="11"
+                                @change="handlePresentCity" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Province</option>
+                                    <option v-for="province in presentProvinces" :value="province.province_code" :key="province.province_code">
+                                        {{ province.province_name }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.province">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleBarangay">
+                                City
+                                </label>
+                                <select 
+                                id="presentCity"
+                                tabindex="12"
+                                @change="handlePresentBarangay" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select City</option>
+                                    <option v-for="city in presentCities" :value="city.city_code" :key="city.city_code">{{ city.city_name }}</option>
+                                </select>
+                                <div v-if="errors.city">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
                         </div>
-                        <div class="form-group mb-4">
-                            <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleCity">
-                            Province
-                            </label>
-                            <select 
-                            tabindex="11"
-                            @change="handleCity" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
-                                <option disabled selected>Select Province</option>
-                                <option v-for="province in provinces" :value="province.province_code" :key="province.province_code">
-                                    {{ province.province_name }}
-                                </option>
-                            </select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="barangaysChange">
+                                Barangay
+                                </label>
+                                <select 
+                                id="presentBarangay"
+                                tabindex="13"
+                                @change="barangaysPresentChange" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Barangay</option>
+                                    <option v-for="barangay in presentBarangays" :value="barangay.brgy_code" :key="barangay.brgy_code">{{
+                                        barangay.brgy_name
+                                        }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.barangay">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="house">
+                                House/Lot #/Village or Subdivision
+                                </label>
+                                <input 
+                                id="presentHouse"
+                                tabindex="14"
+                                class="form-control shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" 
+                                v-model="presentHouse"
+                                type="text"
+                                >
+                                <div v-if="errors.house">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
                         </div>
-                        <div class="form-group mb-4">
-                            <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleBarangay">
-                            City
-                            </label>
-                            <select 
-                            tabindex="12"
-                            @change="handleBarangay" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
-                                <option disabled selected>Select City</option>
-                                <option v-for="city in cities" :value="city.city_code" :key="city.city_code">{{ city.city_name }}</option>
-                            </select>
+                        <div>
+                            <span class="block text-gray-700 text-xl font-bold mb-2">Permanent Address</span>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="form-group mb-4">
-                            <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="barangaysChange">
-                            Barangay
-                            </label>
-                            <select 
-                            tabindex="13"
-                            @change="barangaysChange" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
-                                <option disabled selected>Select Barangay</option>
-                                <option v-for="barangay in barangays" :value="barangay.brgy_code" :key="barangay.brgy_code">{{
-                                    barangay.brgy_name
-                                    }}
-                                </option>
-                            </select>
+                        <div>
+                            <input type="checkbox" name="" id="isChecked" @click="fillSameAddress">
+                            <label for="isChecked">Same as Present Address</label>
                         </div>
-                        <div class="form-group mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="house">
-                            House/Lot #/Village or Subdivision
-                            </label>
-                            <input 
-                            tabindex="14"
-                            class="form-control shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" 
-                            v-model="house"
-                            type="text"
-                            >
+                        <div class="grid grid-cols-3 gap-4" v-show="isNotDisabled">
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handlePermanentProvince">
+                                Region
+                                </label>
+                                <select 
+                                id="permanentRegion"
+                                tabindex="10"
+                                @change="handlePermanentProvince" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Region</option>
+                                    <option v-for="region in permanentRegions" :value="region.region_code" :key="region.region_code">{{
+                                        region.region_name
+                                        }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.region">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleCity">
+                                Province
+                                </label>
+                                <select 
+                                id="permanentProvince"
+                                tabindex="11"
+                                @change="handlePermanentCity" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Province</option>
+                                    <option v-for="province in permanentProvinces" :value="province.province_code" :key="province.province_code">
+                                        {{ province.province_name }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.province">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="handleBarangay">
+                                City
+                                </label>
+                                <select 
+                                id="permanentCity"
+                                tabindex="12"
+                                @change="handlePermanentBarangay" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select City</option>
+                                    <option v-for="city in permanentCities" :value="city.city_code" :key="city.city_code">{{ city.city_name }}</option>
+                                </select>
+                                <div v-if="errors.city">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4" v-show="isNotDisabled">
+                            <div class="form-group mb-4">
+                                <label class="form-control block text-gray-700 text-sm font-bold mb-2" for="barangaysChange">
+                                Barangay
+                                </label>
+                                <select 
+                                id="permanentBarangay"
+                                tabindex="13"
+                                @change="barangaysPermanentChange" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline">
+                                    <option disabled selected>Select Barangay</option>
+                                    <option v-for="barangay in permanentBarangays" :value="barangay.brgy_code" :key="barangay.brgy_code">{{
+                                        barangay.brgy_name
+                                        }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.barangay">
+                                    <span class="text-red-500">Required</span>
+                                </div> 
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="house">
+                                House/Lot #/Village or Subdivision
+                                </label>
+                                <input 
+                                id="permanentHouse"
+                                tabindex="14"
+                                class="form-control shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" 
+                                v-model="permanentHouse"
+                                type="text"
+                                >
+                                <div v-if="errors.house">
+                                    <span class="text-red-500">Required</span>
+                            </div> 
                         </div>
                     </div>
                     <div class="form-group mb-4">
@@ -198,11 +315,9 @@
                         class="w-40 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" 
                         @click.prevent="save()">Save</button>
                     </div> 
-                </div>
             </div>
         </div>
-    </div>
-        
+    </div>        
 </template>
 <script>
 import { mapActions, mapState, mapGetters, mapMutations } from 'vuex';
@@ -212,10 +327,38 @@ export default {
     layout: 'default',
     data() {
         return {
+            errors: {
+                firstname: false,
+                middlename: false,
+                lastname: false,
+                birthdate: '',
+                phone: null,
+                civilStatus: null,
+                region: null,
+                province: null,
+                city: null,
+                barangay: null,
+                house: null,
+                sex: null,
+                email: null,
+                uuid: null,
+                token: null,
+                idNumber: null,
+                idType: null,
+            },
             regions: [],
             provinces: [],
             cities: [],
             barangays: [],
+            isNotDisabled: true,
+            presentRegions: [],
+            presentProvinces: [],
+            presentCities: [],
+            presentBarangays: [],
+            permanentRegions: [],
+            permanentProvinces: [],
+            permanentCities: [],
+            permanentBarangays: [],
         }
     },
     computed: {
@@ -231,11 +374,16 @@ export default {
             getBirthdate: "userManagement/createUser/getBirthdate",
             getPhone: "userManagement/createUser/getPhone",
             getCivilStatus: "userManagement/createUser/getCivilStatus",
-            getRegion: "userManagement/createUser/getRegion",
-            getProvince: "userManagement/createUser/getProvince",
-            getCity: "userManagement/createUser/getCity",
-            getBarangay: "userManagement/createUser/getBarangay",
-            getHouse: "userManagement/createUser/getHouse",
+            getPresentRegion: "userManagement/createUser/getPresentRegion",
+            getPresentProvince: "userManagement/createUser/getPresentProvince",
+            getPresentCity: "userManagement/createUser/getPresentCity",
+            getPresentBarangay: "userManagement/createUser/getPresentBarangay",
+            getPresentHouse: "userManagement/createUser/getPresentHouse",
+            getPermRegion: "userManagement/createUser/getPermanentRegion",
+            getPermProvince: "userManagement/createUser/getPermanentProvince",
+            getPermCity: "userManagement/createUser/getPermanentCity",
+            getPermBarangay: "userManagement/createUser/getPermanentBarangay",
+            getPermHouse: "userManagement/createUser/getPermanentHouse",
             getSex: "userManagement/createUser/getSex",
             getEmail: "userManagement/createUser/getEmail",
             getToken: "userManagement/createUser/getToken",
@@ -290,44 +438,84 @@ export default {
                 this.setCivilStatus(value)
             }
         },
-        region :{
+        presentRegion :{
             get() {
-                return this.getRegion
+                return this.getPresentRegion
             },
             set(value){
-                this.setRegion(value)
+                this.setPresentRegion(value)
             }
         },
-        province :{
+        presentProvince :{
             get() {
-                return this.getProvince
+                return this.getPresentProvince
             },
             set(value){
-                this.setProvince(value)
+                this.setPresentProvince(value)
             }
         },
-        city :{
+        presentCity :{
             get() {
-                return this.getCity
+                return this.getPresentCity
             },
             set(value){
-                this.setCity(value)
+                this.setPresentCity(value)
             }
         },
-        barangay :{
+        presentBarangay :{
             get() {
-                return this.getBarangay
+                return this.getPresentBarangay
             },
             set(value){
-                this.setBarangay(value)
+                this.setPresentBarangay(value)
             }
         },
-        house :{
+        presentHouse :{
             get() {
-                return this.getHouse
+                return this.getPresentHouse
             },
             set(value){
-                this.setHouse(value)
+                this.setPresentHouse(value)
+            }
+        },
+        permanentRegion :{
+            get() {
+                return this.getPermRegion
+            },
+            set(value){
+                this.setPermRegion(value)
+            }
+        },
+        permanentProvince :{
+            get() {
+                return this.getPermProvince
+            },
+            set(value){
+                this.setPermProvince(value)
+            }
+        },
+        permanentCity :{
+            get() {
+                return this.getPermCity
+            },
+            set(value){
+                this.setPermCity(value)
+            }
+        },
+        permanentBarangay :{
+            get() {
+                return this.getPermBarangay
+            },
+            set(value){
+                this.setPermBarangay(value)
+            }
+        },
+        permanentHouse :{
+            get() {
+                return this.getPermHouse
+            },
+            set(value){
+                this.setPermHouse(value)
             }
         },
         sex :{
@@ -380,48 +568,104 @@ export default {
             setBirthdate: 'userManagement/createUser/SET_USER_BIRTHDATE',
             setPhone: 'userManagement/createUser/SET_USER_PHONE',
             setCivilStatus: 'userManagement/createUser/SET_USER_CIVIL_STATUS',
-            setRegion: 'userManagement/createUser/SET_USER_REGION',
-            setProvince: 'userManagement/createUser/SET_USER_PROVINCE',
-            setCity: 'userManagement/createUser/SET_USER_CITY',
-            setBarangay: 'userManagement/createUser/SET_USER_BARANGAY',
-            setHouse: 'userManagement/createUser/SET_USER_HOUSE',
+            setPresentRegion: 'userManagement/createUser/SET_USER_PRESENT_REGION',
+            setPresentProvince: 'userManagement/createUser/SET_USER_PRESENT_PROVINCE',
+            setPresentCity: 'userManagement/createUser/SET_USER_PRESENT_CITY',
+            setPresentBarangay: 'userManagement/createUser/SET_USER_PRESENT_BARANGAY',
+            setPresentHouse: 'userManagement/createUser/SET_USER_PRESENT_HOUSE',
+            setPermRegion: 'userManagement/createUser/SET_USER_PERMANENT_REGION',
+            setPermProvince: 'userManagement/createUser/SET_USER_PERMANENT_PROVINCE',
+            setPermCity: 'userManagement/createUser/SET_USER_PERMANENT_CITY',
+            setPermBarangay: 'userManagement/createUser/SET_USER_PERMANENT_BARANGAY',
+            setPermHouse: 'userManagement/createUser/SET_USER_PERMANENT_HOUSE',
             setSex: 'userManagement/createUser/SET_USER_SEX',
             setEmail: 'userManagement/createUser/SET_USER_EMAIL',
             setToken: 'userManagement/createUser/SET_USER_TOKEN',
             setRole: 'userManagement/createUser/SET_CLIENT_ROLE',
         }),
-        handleProvince(e) {
-        this.region = e.target.selectedOptions[0].text;
-        provinces(e.target.value).then(response => {
-            this.provinces = response;
-        });
+        handlePresentProvince(e) {
+            this.presentRegion = e.target.selectedOptions[0].text;
+            provinces(e.target.value).then(response => {
+                this.presentProvinces = response;
+            });
         },
-        handleCity(e) {
-        this.province = e.target.selectedOptions[0].text;
-        cities(e.target.value).then(response => {
-            this.cities = response;
-        });
+
+        handlePresentCity(e) {
+            this.presentProvince = e.target.selectedOptions[0].text;
+            cities(e.target.value).then(response => {
+                this.presentCities = response;
+            });
         },
-        handleBarangay(e) {
-        this.city = e.target.selectedOptions[0].text;
-        barangays(e.target.value).then(response => {
-            this.barangays = response;
-        });
+
+        handlePresentBarangay(e) {
+            this.presentCity = e.target.selectedOptions[0].text;
+            barangays(e.target.value).then(response => {
+                this.presentBarangays = response;
+            });
         },
-        barangaysChange(e) {
-        this.barangay = e.target.selectedOptions[0].text;
-        },    
+
+        barangaysPresentChange(e) {
+            this.presentBarangay = e.target.selectedOptions[0].text;
+        },
+
+        handlePermanentProvince(e) {
+            this.permanentRegion = e.target.selectedOptions[0].text;
+            provinces(e.target.value).then(response => {
+                this.permanentProvinces = response;
+            });
+        },
+
+        handlePermanentCity(e) {
+            this.permanentProvince = e.target.selectedOptions[0].text;
+            cities(e.target.value).then(response => {
+                this.permanentCities = response;
+            });
+        },
+
+        handlePermanentBarangay(e) {
+            this.permanentCity = e.target.selectedOptions[0].text;
+            barangays(e.target.value).then(response => {
+                this.permanentBarangays = response;
+            });
+        },
+
+        barangaysPermanentChange(e) {
+            this.permanentBarangay = e.target.selectedOptions[0].text;
+        },
+
+        fillSameAddress(){
+            let checkbox = document.getElementById('isChecked')
+            if (checkbox.checked == true){
+                this.isNotDisabled = false
+                this.permanentRegion = this.presentRegion
+                this.permanentProvince = this.presentProvince
+                this.permanentCity = this.presentCity
+                this.permanentBarangay = this.presentBarangay
+                this.permanentHouse = this.presentHouse
+            } else {
+                this.isNotDisabled = true
+                // this.presentRegion = null
+                // this.presentProvince = null
+                // this.presentCity = null
+                // this.presentBarangay = null
+                // this.presentHouse = null
+                this.permanentRegion = null
+                this.permanentProvince = null
+                this.permanentCity = null
+                this.permanentBarangay = null
+                this.permanentHouse = null
+            }
+        },
+
         save(){
             this.detectExistingUser()
-            // await this.getMasterDataUser()
-            // this.addUser()
-            // this.getUserUuid()
-            // this.toMasterData()
         }
     },
     created() {
         regions().then(response => {
-        this.regions = response;
+        this.presentRegions = response;
+        this.permanentRegions = response;
+        console.log(response)
         });
     },
 }

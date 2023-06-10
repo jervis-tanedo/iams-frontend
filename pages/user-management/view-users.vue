@@ -1,11 +1,10 @@
 <template>
-    <div class="relative">
-        <div class="block px-64 py-20 overflow-auto">
-            <div class="card h-screen">
-                <div class="card-header bg-white rounded p-2 m-1 h-screen">
-                    <div class="grid grid-cols-3 gap-4">
+    <div class="relative flex items-top justify-center min-h-screen bg-gray-100 sm:items-center sm:pt-0">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="mt-8 bg-white overflow-hidden shadow sm:rounded-lg p-6">
+                <div class="grid grid-cols-3 gap-4">
                         <div class="form-group mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="firstname">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="search">
                             Search
                             </label>
                             <input 
@@ -13,10 +12,11 @@
                             v-model="search"
                             type="text"
                             >
+                            <Filters :filter_headers="filters" :filters="filter" @applyFilter="applyFilter"/>
                         </div>
                     </div>
                     <div class="">
-                        <table class="min-w-full text-left text-md font-light">
+                        <table v-show="userLists.data" class="min-w-full text-left text-md font-light">
                             <thead class="border-b font-medium dark:border-neutral-500">
                                 <tr>
                                     <th scope="col" class="px-6 py-4">First Name</th>
@@ -26,17 +26,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="user in userLists" :key="user.id" class="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
-                                    <td class="whitespace-nowrap px-6 py-4">{{ user.first_name }}</td>
-                                    <td class="whitespace-nowrap px-6 py-4">{{ user.middle_name }}</td>
-                                    <td class="whitespace-nowrap px-6 py-4">{{ user.last_name }}</td>
+                                <tr v-for="user in userLists.data" :key="user.id" class="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
+                                    <td class="whitespace-nowrap px-6 py-4">{{ user.firstName }}</td>
+                                    <td class="whitespace-nowrap px-6 py-4">{{ user.middleName }}</td>
+                                    <td class="whitespace-nowrap px-6 py-4">{{ user.lastName }}</td>
                                     <td class="whitespace-nowrap px-6 py-4"><button class="bg-green-500 text-white p-2 rounded" @click="openDrawer(user)">View</button></td>
                                 </tr>
-                            </tbody>
-                            
+                            </tbody>  
                         </table>
+                        <vs-pagination :total-pages="totalPages" :current-page="currentPage" @change="changePage"></vs-pagination>
                     </div>
-                </div>
             </div>
         </div>
         <div>
@@ -54,13 +53,12 @@
                 </template>
             </GenericDrawer>
         </div>
-        
     </div>
 </template>
 
 <script>
 import { mapActions, mapState, mapGetters, mapMutations } from 'vuex';
-import UserView from '@/components/UserManagement/UserView.vue'
+import UserView from '@/components/UserManagement/UserView.vue';
 export default {
     layout: 'default',
     components: { UserView },
@@ -69,13 +67,20 @@ export default {
             showDrawer: false,
             uuid: null,
             drawerData: {},
+            filters: [ //field -> db field/column; name -> name of key returned; type -> what type of filter; label -> label to be used
+                {field: 'first_name', name: 'first_name', type: 'input', label: 'First Name'},
+                {field: 'last_name', name: 'last_name', type: 'input', label: 'Last Name'},
+            ],
         }
     },
     computed: {
         ...mapState({
             search: state => state.userManagement.viewUsers.search,
-            filter: state => state.filter.filterValues,
-            userLists: state => state.userManagement.viewUsers.userLists
+            filter: state => state.userManagement.viewUsers.filters,
+            userLists: state => state.userManagement.viewUsers.userLists,
+            kcUserLists: state => state.userManagement.viewUsers.kcUserList,
+            totalPages: state => state.userManagement.viewUsers.userLists.last_page,
+            currentPage: state => state.userManagement.viewUsers.userLists.current_page,
         }),
         
         ...mapGetters({
@@ -100,14 +105,28 @@ export default {
             }
         },
     },
+    async fetch(){
+        this.getUserList(1)
+        await this.updateFilterValues({})
+        await this.filters.forEach(filter => { 
+        this.getFilters({
+            data: {
+            column_name: filter.field,
+            distinct: 'true',
+            }
+        })
+        });
+    },
     methods: {
         ...mapActions({
             userList: 'userManagement/viewUsers/userList',
-            // userList: 'userManagement/viewUsers/userList',
+            kcUserList: 'userManagement/viewUsers/kcUserList',
+            getFilters: 'userManagement/viewUsers/getFilters',
         }),
         ...mapMutations({
             setUserLists: 'userManagement/viewUsers/SET_USER_LISTS',
-            setSearch: 'userManagement/viewUsers/SET_SEARCH'
+            setSearch: 'userManagement/viewUsers/SET_SEARCH',
+            updateFilterValues: 'userManagement/viewUsers/UPDATE_FILTER_VALUES',
         }),
 
         openDrawer(user) {
@@ -116,9 +135,33 @@ export default {
             console.log(user)
             this.drawerData = user
         },
+
+        changePage(page) {
+            this.getUserList(page)
+        },
+
+        getUserList(page){
+            this.userList({
+                data: {
+                    page: page
+                }
+            })
+        },
+
+        applyFilter(data) { // apply the filter from the filters component
+            console.log(data)
+            this.updateFilterValues(data)
+            this.getUserList(1)
+        },
+    },
+    watch:{
+        update(newVal, oldVal){
+            this.changePage(1)
+        }
     },
     mounted() {
         this.userList()
+        // this.kcUserList()
     }
 }
 </script>

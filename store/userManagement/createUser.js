@@ -12,11 +12,16 @@ export const state = () => ({
         provinces: [],
         cities: [],
         barangays: [],
-        region: null,
-        province: null,
-        city: null,
-        barangay: null,
-        house: null,
+        presentRegion: null,
+        permanentRegion: null,
+        presentProvince: null,
+        permanentProvince: null,
+        presentCity: null,
+        permanentCity: null,
+        presentBarangay: null,
+        permanentBarangay: null,
+        presentHouse: null,
+        permanentHouse: null,
         sex: '',
         email: '',
         uuid: null,
@@ -46,20 +51,35 @@ export const getters = {
     getCivilStatus(state){
         return state.userDetails.civilStatus
     },
-    getRegion(state){
-        return state.userDetails.region
+    getPresentRegion(state){
+        return state.userDetails.presentRegion
     },
-    getProvince(state){
-        return state.userDetails.province
+    getPresentProvince(state){
+        return state.userDetails.presentProvince
     },
-    getCity(state){
-        return state.userDetails.city
+    getPresentCity(state){
+        return state.userDetails.presentCity
     },
-    getBarangay(state){
-        return state.userDetails.barangay
+    getPresentBarangay(state){
+        return state.userDetails.presentBarangay
     },
-    getHouse(state){
-        return state.userDetails.house
+    getPresentHouse(state){
+        return state.userDetails.presentHouse
+    },
+    getPermanentRegion(state){
+        return state.userDetails.permanentRegion
+    },
+    getPermanentProvince(state){
+        return state.userDetails.permanentProvince
+    },
+    getPermanentCity(state){
+        return state.userDetails.permanentCity
+    },
+    getPermanentBarangay(state){
+        return state.userDetails.permanentBarangay
+    },
+    getPermanentHouse(state){
+        return state.userDetails.permanentHouse
     },
     getSex(state) {
         return state.userDetails.sex
@@ -107,7 +127,7 @@ export const actions = {
 
     async addUser({dispatch, commit, state}) {
         // let keycloakApi = `https://dev.iams.uplb.edu.ph/auth/admin/realms/UPLB_APP_REALM/users`
-        let keycloakApi = `http://localhost:8282/admin/realms/UPLB_APP_REALM/users`
+        let keycloakApi = `${process.env.KEYCLOAK_REST_API}${process.env.KEYCLOAK_REALM}/users`
         // program to generate random strings
 
         // declare all characters
@@ -166,7 +186,7 @@ export const actions = {
 
     async getUserUuid({commit, state, dispatch}, payload){
         //get newly created user
-        let keycloakApi = `http://localhost:8282/admin/realms/UPLB_APP_REALM/users`
+        let keycloakApi = `${process.env.KEYCLOAK_REST_API}${process.env.KEYCLOAK_REALM}/users`
         try {
             const res = await this.$axios.$get(keycloakApi + '/?email=' + state.userDetails.email, {
                 headers: {
@@ -271,24 +291,44 @@ export const mutations = {
         state.userDetails.civilStatus = civilStatus
     },
         
-    SET_USER_REGION(state, region){
-        state.userDetails.region = region
+    SET_USER_PRESENT_REGION(state, presentRegion){
+        state.userDetails.presentRegion = presentRegion
     },
     
-    SET_USER_PROVINCE(state, province){
-        state.userDetails.province = province
+    SET_USER_PRESENT_PROVINCE(state, presentProvince){
+        state.userDetails.presentProvince = presentProvince
     },
     
-    SET_USER_CITY(state, city){
-        state.userDetails.city = city
+    SET_USER_PRESENT_CITY(state, presentCity){
+        state.userDetails.presentCity = presentCity
     },
     
-    SET_USER_BARANGAY(state, barangay){
-        state.userDetails.barangay = barangay
+    SET_USER_PRESENT_BARANGAY(state, presentBarangay){
+        state.userDetails.presentBarangay = presentBarangay
     },
 
-    SET_USER_HOUSE(state, house){
-        state.userDetails.house = house
+    SET_USER_PRESENT_HOUSE(state, presentHouse){
+        state.userDetails.presentHouse = presentHouse
+    },
+
+    SET_USER_PERMANENT_REGION(state, permanentRegion){
+        state.userDetails.permanentRegion = permanentRegion
+    },
+    
+    SET_USER_PERMANENT_PROVINCE(state, permanentProvince){
+        state.userDetails.permanentProvince = permanentProvince
+    },
+    
+    SET_USER_PERMANENT_CITY(state, permanentCity){
+        state.userDetails.permanentCity = permanentCity
+    },
+    
+    SET_USER_PERMANENT_BARANGAY(state, permanentBarangay){
+        state.userDetails.permanentBarangay = permanentBarangay
+    },
+
+    SET_USER_PERMANENT_HOUSE(state, permanentHouse){
+        state.userDetails.permanentHouse = permanentHouse
     },
 
     SET_USER_SEX(state, sex){

@@ -1,28 +1,12 @@
 export const state = () => ({
     search: null,
     userLists: {},
+    kcUserList: {},
+    users:{},
     uuid: null,
     roles: [],
-    userDetails: {
-        // firstname: '',
-        // lastname: '',
-        // middlename: '',
-        // birthdate: '',
-        // phone: '',
-        // civilStatus: '',
-        // regions: [],
-        // provinces: [],
-        // cities: [],
-        // barangays: [],
-        // region: null,
-        // province: null,
-        // city: null,
-        // barangay: null,
-        // house: null,
-        // sex: '',
-        // email: '',
-        // role: [],
-    }
+    filters: {},
+    filterValues: [],
 })
 
 export const getters = {
@@ -35,27 +19,67 @@ export const getters = {
 }
 
 export const actions = {
-    async userList ({state, commit}) {
+    async userList ({state, commit}, payload) {
+        
         let keycloakApi = `http://localhost/api/users`
         try {
-            const res = await this.$axios.$get(keycloakApi)
+            // let tableParams = Object.assign(payload.data)
+            let tableParams = Object.assign(payload.data, state.filterValues)
+            const res = await this.$axios.$get(keycloakApi,{params: tableParams}, {headers:{
+                'Authorization' : this.$auth.strategy.token.get(),
+                'Content-Type' : 'application/json',
+              }})
             .then(response => {
-                // console.log(response)
-                console.table(response.userLists)
                 const users = response.userLists
-                const myArr = Object.values(users)
-                // console.log(myArr)
-                commit('SET_USER_LISTS', myArr)
-                // console.log(state.userLists)
+                // const myArr = Object.values(users)
+                commit('SET_USER_LISTS', users)
             })
         } catch(error) {
 
         }
     },
+
+    async kcUserList({state, commit}){
+        let keycloakApi = `${process.env.KEYCLOAK_REST_API}${process.env.KEYCLOAK_REALM}/users`
+        try {
+            const res = await this.$axios.$get(keycloakApi, {headers: {
+                'Authorization' : this.$auth.strategy.token.get(),
+                'Content-Type' : 'application/json',
+            }})
+            const array = Object.values(res)
+            await commit('SET_KC_USER_LIST', array)
+        } catch(error) {
+            console.log(error)
+        }
+    },
+    async getFilters({ commit }, payload) {
+        // commit('GET_DATA_REQUEST')
+        try {
+            const data = await this.$axios.$get(`http://localhost/api/users`, {params: payload.data})
+            await commit('GET_FILTER_SUCCESS', {key: payload.data.column_name, filter:data.userLists})
+        } catch (error) {
+            if(error.response.status===422){  
+                let errList = ``;
+                let fields = Object.keys(error.response.data.errors)
+                fields.forEach((field) => {
+                let errorArr = error.response.data.errors[field]
+                errorArr.forEach((errMess) => {
+                    errList += `<li>${errMess}</li>`
+                })
+            })
+                let errMessage = `Validation Error: ${errList}`
+                await commit('alert/ERROR', errMessage, { root: true })
+            }else{
+                let errMessage = `Something went wrong while performing your request. Please contact administrator`
+                await commit('alert/ERROR', errMessage, { root: true })
+            }
+            // commit('GET_DATA_FAILED', error)
+        }
+    },
+
     async setUuid({state, commit, dispatch}, uuid){
-        console.log(uuid)
+        // console.log(uuid)
         await commit('SET_USER_UUID', uuid)
-        // await dispatch('getRoles')
     },
 
     async getRoles({state, commit}){
@@ -149,5 +173,18 @@ export const mutations = {
 
     SET_ROLES(state, roles){
         state.roles = roles
-    }
+    },
+
+    SET_KC_USER_LIST(state, list){
+        state.kcUserList = list
+    },
+    
+    UPDATE_FILTER_VALUES(state, data) {
+        state.filterValues = data
+    },
+
+    GET_FILTER_SUCCESS (state, data) {
+        Vue.set(state.filters, data.key, data.filter)
+        // state.loading = false
+    },
 }
